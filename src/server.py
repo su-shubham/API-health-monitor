@@ -1,19 +1,17 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-from src.api_agent import api_agent
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, HttpUrl
+from src.api_agent import api_agent, fetch_metrics_from_api
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],  
     allow_headers=["*"], 
 )
-
 
 class Metrics(BaseModel):
     traffic_count: int
@@ -31,7 +29,6 @@ class APIResponse(BaseModel):
     risk_level: str
     time_to_impact: str
     recommendation: str
-    llm_analysis: str 
 
 @app.post("/predict", response_model=APIResponse)
 async def predict(metrics: Metrics):
@@ -44,10 +41,27 @@ async def predict(metrics: Metrics):
         metrics.disk_io,
         metrics.concurrent_users
     )
-    
-    predictions["llm_analysis"] = predictions.get("llm_analysis", "No LLM analysis provided.")
-    print(predictions["llm_analysis"])
     return APIResponse(**predictions)
+
+class APIUrlRequest(BaseModel):
+    api_url: HttpUrl
+
+@app.post("/predict-from-url", response_model=APIResponse)
+async def predict_from_url(api_request: APIUrlRequest):
+    try:
+        metrics = fetch_metrics_from_api(api_request.api_url)
+        predictions = api_agent.analyze_metrics(
+            metrics['traffic_count'],
+            metrics['error_rate'],
+            metrics['uptime'],
+            metrics['cpu_usage'],
+            metrics['memory_usage'],
+            metrics['disk_io'],
+            metrics['concurrent_users']
+        )
+        return APIResponse(**predictions)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to fetch or analyze data: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
