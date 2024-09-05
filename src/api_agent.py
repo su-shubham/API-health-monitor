@@ -7,7 +7,8 @@ import os
 import requests
 from fastapi import HTTPException
 
-load_dotenv()
+os.getenv('DEEPINFRA_API_TOKEN')
+
 
 models_dir = os.path.join(os.path.dirname(__file__), '..', 'models')
 
