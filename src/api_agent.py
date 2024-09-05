@@ -6,6 +6,9 @@ from functools import lru_cache
 
 load_dotenv()
 
+import os
+models_dir = os.path.join(os.path.dirname(__file__), '..', 'models')
+
 np.random.seed(42)
 
 llm = DeepInfra(model_id="google/gemma-2-27b-it")
@@ -106,10 +109,12 @@ class APIMonitoringAgent:
 
 
 
-with open('../models/regression_model.pkl', 'rb') as f:
+# Load the regression model
+with open(os.path.join(models_dir, 'regression_model.pkl'), 'rb') as f:
     reg_model = pickle.load(f)
 
-with open('../models/classification_model.pkl', 'rb') as f:
+# Load the classification model
+with open(os.path.join(models_dir, 'classification_model.pkl'), 'rb') as f:
     clf_model = pickle.load(f)
 
 api_agent = APIMonitoringAgent(reg_model, clf_model, llm)
