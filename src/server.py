@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from src.api_agent import api_agent
 from fastapi.middleware.cors import CORSMiddleware
-
+os.getenv('DEEPINFRA_API_TOKEN')
 app = FastAPI()
 
 

@@ -3,11 +3,11 @@ import pickle
 import numpy as np
 from dotenv import load_dotenv
 from functools import lru_cache
-
 load_dotenv()
 
 import os
 models_dir = os.path.join(os.path.dirname(__file__), '..', 'models')
+os.getenv('DEEPINFRA_API_TOKEN')
 
 np.random.seed(42)
 
